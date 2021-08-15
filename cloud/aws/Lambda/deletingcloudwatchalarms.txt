@@ -10,13 +10,15 @@ def lambda_handler(event, context):
 	
 	existing_alarms = []
 	deleted_alarms = []
-	num_of_alarms = 0
+	#num_of_alarms = 0
 	try:
 		response = cloudwatch.describe_alarms(AlarmNamePrefix='aws_notification', AlarmTypes=['MetricAlarm'])
+		#print('response ===>' + str(response))
+		logger.info('response ===>' + str(response))
 		#print('<=== Below are the alarms present with prefix as aws_notification===>')
 		logger.info('<=== Below are the alarms present with prefix as aws_notification===>')
 		for alarm_name in response['MetricAlarms']:
-			num_of_alarms += 1
+			#num_of_alarms += 1
 			existing_alarms.append(alarm_name['AlarmName'])
 			#print(alarm_name['AlarmName'])
 			logger.info(alarm_name['AlarmName'])
@@ -24,7 +26,7 @@ def lambda_handler(event, context):
 		for alarm_name in response['MetricAlarms']:
 			if cloudwatch.delete_alarms(AlarmNames=[alarm_name['AlarmName']]):
 				deleted_alarms.append(alarm_name['AlarmName'])
-				num_of_alarms += 1
+				#num_of_alarms += 1
 
 		#print('<=== Below are the existing Alarms. ===>')
 		logger.info('<=== Below are the existing Alarms. ===>')

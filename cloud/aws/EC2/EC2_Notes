@@ -42,7 +42,6 @@ How to connect to RDS from EC2 instance.
 ========================================
 Create SG for EC2 with SSH (22)
 Create SG for RDS with 3306 (MYSQL/Aurora) , source as EC2 EG.
-Note : Both should be in same AZ.
 Create RDS instance in default VPC.
 Connect to EC2 instance and perform below activities.
 sudo su

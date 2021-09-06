@@ -1,0 +1,108 @@
+#1. Create VPC
+#2. Create Internet Gateway
+#3. Create custome Route Table
+#4. Create a subnet.
+#5. Associate Route Table with Subnet.
+#6. Create Security group to allow port 22,80, 443
+#7. Create a network interface with an IP in the subnet that was create in step4
+#8. Assign an Elastic IP to the network interface created in step7
+#9. Create Ubuntu server and install/enable apache2.
+
+
+# Configure the AWS Provider
+provider "aws" {
+  region = "us-east-1"
+  access_key = "AKIAJ4MP7MSC6M4DOWIA"
+  secret_key = "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"
+}
+#https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc
+resource "aws_vpc" "myVPC" {
+  cidr_block       = "10.0.0.0/26"
+  instance_tenancy = "default"
+  
+  tags = {
+    Name = "CustomVPC"
+  }
+}
+
+
+resource "aws_subnet" "public-1a" {
+  vpc_id     = aws_vpc.myVPC.id
+  cidr_block = "10.0.0.0/28"
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "public 1A"
+  }
+}
+resource "aws_subnet" "private-1a" {
+  vpc_id     = aws_vpc.myVPC.id
+  cidr_block = "10.0.0.16/28"
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "Private 1A"
+  }
+}
+resource "aws_subnet" "public-1b" {
+  vpc_id     = aws_vpc.myVPC.id
+  cidr_block = "10.0.0.32/28"
+  availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "public 1B"
+  }
+}
+resource "aws_subnet" "private-1b" {
+  vpc_id     = aws_vpc.myVPC.id
+  cidr_block = "10.0.0.48/28"
+  availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "private 1B"
+  }
+}
+
+
+
+
+
+
+
+
+variable "region_number" {
+  # Arbitrary mapping of region name to number to use in
+  # a VPC's CIDR prefix.
+  default = {
+    us-east-1      = 1
+  }
+}
+
+variable "az_number" {
+  # Assign a number to each AZ letter used in our configuration
+  default = {
+    a = 1
+    b = 2
+    c = 3
+    d = 4
+    e = 5
+    f = 6
+  }
+}
+
+# Retrieve the AZ where we want to create network resources
+# This must be in the region selected on the AWS provider.
+data "aws_availability_zone" "AZS" {
+  name = "us-east-1"
+}
+
+# Create a VPC for the region associated with the AZ
+resource "aws_vpc" "awsvpc" {
+  cidr_block = cidrsubnet("10.0.0.0/26", 4, var.region_number[data.aws_availability_zone.AZS.region])
+}
+
+# Create a subnet for the AZ within the regional VPC
+resource "aws_subnet" "example" {
+  vpc_id     = aws_vpc.awsvpc.id
+  cidr_block = cidrsubnet(aws_vpc.awsvpc.cidr_block, 4, var.az_number[data.aws_availability_zone.AZS.name_suffix])
+}
